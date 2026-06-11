@@ -12,6 +12,7 @@ import {
   createOpenAICompatibleModels,
   openaiCompatibleModelsSafeParse,
 } from "./create-openai-compatiable";
+import { createLiteLLMModels } from "./litellm";
 import { ChatModel } from "app-types/chat";
 import {
   DEFAULT_FILE_PART_MIME_TYPES,
@@ -160,7 +161,13 @@ const {
   unsupportedModels: openaiCompatibleUnsupportedModels,
 } = createOpenAICompatibleModels(openaiCompatibleProviders);
 
-const allModels = { ...openaiCompatibleModels, ...staticModels };
+const litellmModels = createLiteLLMModels();
+
+const allModels = {
+  ...openaiCompatibleModels,
+  ...staticModels,
+  ...({ litellm: litellmModels } as typeof openaiCompatibleModels),
+};
 
 const allUnsupportedModels = new Set([
   ...openaiCompatibleUnsupportedModels,
@@ -190,7 +197,7 @@ export const customModelProvider = {
       isImageInputUnsupported: isImageInputUnsupportedModel(model),
       supportedFileMimeTypes: [...getFilePartSupportedMimeTypes(model)],
     })),
-    hasAPIKey: checkProviderAPIKey(provider as keyof typeof staticModels),
+    hasAPIKey: checkProviderAPIKey(provider),
   })),
   getModel: (model?: ChatModel): LanguageModel => {
     if (!model) return fallbackModel;
@@ -198,7 +205,7 @@ export const customModelProvider = {
   },
 };
 
-function checkProviderAPIKey(provider: keyof typeof staticModels) {
+function checkProviderAPIKey(provider: string) {
   let key: string | undefined;
   switch (provider) {
     case "openai":
@@ -219,8 +226,11 @@ function checkProviderAPIKey(provider: keyof typeof staticModels) {
     case "openRouter":
       key = process.env.OPENROUTER_API_KEY;
       break;
+    case "litellm":
+      key = process.env.LITELLM_BASE_URL;
+      break;
     default:
-      return true; // assume the provider has an API key
+      return true;
   }
   return !!key && key != "****";
 }

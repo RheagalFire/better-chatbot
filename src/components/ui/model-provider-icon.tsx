@@ -5,6 +5,7 @@ import { GrokIcon } from "./grok-icon";
 import { OpenAIIcon } from "./openai-icon";
 import { OllamaIcon } from "./ollama-icon";
 import { OpenRouterIcon } from "./open-router-icon";
+import { LiteLLMIcon } from "./litellm-icon";
 
 export function ModelProviderIcon({
   provider,
@@ -22,6 +23,8 @@ export function ModelProviderIcon({
     <OllamaIcon className={className} />
   ) : provider === "openRouter" ? (
     <OpenRouterIcon className={className} />
+  ) : provider === "litellm" ? (
+    <LiteLLMIcon className={className} />
   ) : (
     <BlendIcon className={className} />
   );
