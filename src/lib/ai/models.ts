@@ -12,7 +12,7 @@ import {
   createOpenAICompatibleModels,
   openaiCompatibleModelsSafeParse,
 } from "./create-openai-compatiable";
-import { createLiteLLMModels } from "./litellm";
+import { createLiteLLMModels, getLiteLLMModel } from "./litellm";
 import { ChatModel } from "app-types/chat";
 import {
   DEFAULT_FILE_PART_MIME_TYPES,
@@ -201,7 +201,12 @@ export const customModelProvider = {
   })),
   getModel: (model?: ChatModel): LanguageModel => {
     if (!model) return fallbackModel;
-    return allModels[model.provider]?.[model.model] || fallbackModel;
+    const found = allModels[model.provider]?.[model.model];
+    if (found) return found;
+    if (model.provider === "litellm") {
+      return getLiteLLMModel(model.model) ?? fallbackModel;
+    }
+    return fallbackModel;
   },
 };
 
